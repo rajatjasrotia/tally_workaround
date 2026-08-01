@@ -2,4 +2,5 @@ fastapi
 uvicorn[standard]
 sqlmodel
 Jinja2
-WeasyPrint
+pdfkit
+alembic

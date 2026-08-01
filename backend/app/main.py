@@ -13,7 +13,7 @@ import os
 
 # PDF & email deps
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from weasyprint import HTML
+import pdfkit
 import io
 from fastapi.responses import StreamingResponse
 import smtplib
@@ -191,7 +191,17 @@ def render_invoice_pdf_bytes(invoice, invoice_items):
         <h3>Total: {invoice.total:.2f}</h3>
         </body></html>
         """
-    pdf_bytes = HTML(string=html_out).write_pdf()
+    # Convert HTML to PDF using wkhtmltopdf via pdfkit
+    try:
+        pdf_bytes = pdfkit.from_string(html_out, False)
+    except Exception:
+        # On some environments pdfkit requires configuration with wkhtmltopdf path
+        config_path = os.environ.get("WKHTMLTOPDF_PATH")
+        if config_path:
+            config = pdfkit.configuration(wkhtmltopdf=config_path)
+            pdf_bytes = pdfkit.from_string(html_out, False, configuration=config)
+        else:
+            raise
     return pdf_bytes
 
 @app.get("/api/invoices/{invoice_id}/pdf")
