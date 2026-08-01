@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tally Workaround - Inventory</title>
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 1rem; max-width: 900px; margin: 0 auto; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 0.5rem; border: 1px solid #ddd; }
+      .row { display:flex; gap:1rem; align-items:center; }
+      .col { flex:1 }
+      .btn { padding: 0.4rem 0.8rem; background:#0366d6; color:white; border-radius:4px; border:none }
+    </style>
+  </head>
+  <body>
+    <h1>Inventory</h1>
+    <div id="inventory"></div>
+
+    <h2>Add Item</h2>
+    <div>
+      <input id="name" placeholder="Name" />
+      <input id="sku" placeholder="SKU" />
+      <input id="price" placeholder="Price" type="number" step="0.01" />
+      <input id="quantity" placeholder="Quantity" type="number" />
+      <button id="addBtn" class="btn">Add</button>
+    </div>
+
+    <hr />
+    <h2>Create Invoice</h2>
+    <div>
+      <input id="customer_name" placeholder="Customer name" />
+      <input id="customer_email" placeholder="Customer email" />
+      <div id="invoice-items"></div>
+      <button id="createInvoice" class="btn">Create Invoice</button>
+    </div>
+
+    <hr />
+    <h2>Invoices</h2>
+    <div id="invoices"></div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
