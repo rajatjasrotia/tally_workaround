@@ -30,9 +30,9 @@ Quick start (local, without Docker):
    python -m app.main
 
    # or
-   uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-4. Open browser: http://127.0.0.1:8000/
+4. Open browser: http://localhost:8000
 
 Docker (optional):
 
