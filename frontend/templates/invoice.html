@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Invoice #{{ invoice.id }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+    .right { text-align: right; }
+  </style>
+</head>
+<body>
+  <h1>Invoice #{{ invoice.id }}</h1>
+  <p>Date: {{ invoice.created_at }}</p>
+  <p>Customer: {{ invoice.customer.name if invoice.customer else 'N/A' }} &lt;{{ invoice.customer.email if invoice.customer else '' }}&gt;</p>
+
+  <table>
+    <thead>
+      <tr><th>Item</th><th>Qty</th><th>Unit</th><th>Total</th></tr>
+    </thead>
+    <tbody>
+    {% for it in items %}
+      <tr>
+        <td>{{ it.item.name if it.item else it.item_id }}</td>
+        <td class="right">{{ it.quantity }}</td>
+        <td class="right">{{ "%.2f"|format(it.unit_price) }}</td>
+        <td class="right">{{ "%.2f"|format(it.quantity * it.unit_price) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><td colspan="3" class="right"><strong>Total</strong></td><td class="right"><strong>{{ "%.2f"|format(invoice.total) }}</strong></td></tr>
+    </tfoot>
+  </table>
+</body>
+</html>
