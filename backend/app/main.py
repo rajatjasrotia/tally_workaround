@@ -10,6 +10,11 @@ from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
 import os
+import logging
+
+# Alembic for runtime migrations
+from alembic.config import Config
+from alembic import command
 
 # PDF & email deps
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -18,6 +23,8 @@ import io
 from fastapi.responses import StreamingResponse
 import smtplib
 from email.message import EmailMessage
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Tally Workaround API")
 
@@ -65,9 +72,34 @@ ROOT = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = ROOT / "frontend"
 TEMPLATES_DIR = FRONTEND_DIR / "templates"
 
+
+def run_alembic_migrations(database_url: str, alembic_ini_path: str):
+    """Run alembic upgrade head using the provided DATABASE_URL and alembic.ini path."""
+    try:
+        alembic_cfg = Config(str(alembic_ini_path))
+        # ensure alembic uses the same DB URL
+        alembic_cfg.set_main_option("sqlalchemy.url", database_url)
+        # Run upgrade
+        command.upgrade(alembic_cfg, "head")
+        logger.info("Alembic upgrade head completed")
+    except Exception as e:
+        logger.exception("Alembic migrations failed: %s", e)
+        # Do not re-raise — allow application to continue (optional: you may want to fail fast)
+
+
 @app.on_event("startup")
 def on_startup():
+    # Run alembic migrations first so the DB schema matches models.
+    DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./backend/database.db")
+    alembic_ini = ROOT / "alembic.ini"
+    if alembic_ini.exists():
+        run_alembic_migrations(DATABASE_URL, alembic_ini)
+    else:
+        logger.info("No alembic.ini found at %s; skipping alembic migrations", alembic_ini)
+
+    # Create any missing tables (non-destructive) as a fallback
     init_db()
+
 
 @app.get("/api/items", response_model=List[Item])
 def list_items():
@@ -148,6 +180,7 @@ def list_invoices():
     with get_session() as session:
         invoices = session.exec(select(Invoice)).all()
         return invoices
+
 
 def render_invoice_pdf_bytes(invoice, invoice_items):
     # Render HTML using template if available
@@ -306,4 +339,4 @@ if FRONTEND_DIR.exists():
 
 if __name__ == "__main__":
     # When running as a script, run uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), reload=True)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=int(os.environ.get("PORT", 8000)), reload=True)
