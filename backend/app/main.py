@@ -22,12 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve frontend static files from project frontend/ directory
-ROOT = Path(__file__).resolve().parents[2]
-FRONTEND_DIR = ROOT / "frontend"
-if FRONTEND_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
-
 # Pydantic schemas for requests
 class ItemCreate(BaseModel):
     name: str
@@ -140,6 +134,12 @@ def create_invoice(payload: InvoiceCreate):
         session.commit()
         session.refresh(invoice)
         return invoice
+
+# Serve frontend static files from project frontend/ directory (mounted after API routes so /api/* matches first)
+ROOT = Path(__file__).resolve().parents[2]
+FRONTEND_DIR = ROOT / "frontend"
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
 if __name__ == "__main__":
     # When running as a script, run uvicorn
