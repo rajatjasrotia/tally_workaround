@@ -8,7 +8,9 @@ class Item(SQLModel, table=True):
     name: str
     sku: Optional[str] = None
     price: float = 0.0
-    quantity: int = 0
+    quantity: int = 0  # remaining quantity in stock
+    total_added: int = 0  # total items ever added to stock
+    sold_count: int = 0  # total items sold
 
     invoice_items: List["InvoiceItem"] = Relationship(back_populates="item")
 
